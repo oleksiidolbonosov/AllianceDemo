@@ -1,37 +1,70 @@
-using AllianceDemo.Domain.Entities;
+﻿using AllianceDemo.Domain.Entities;
 using UnityEngine;
 
 namespace AllianceDemo.Presentation.Gameplay
 {
     /// <summary>
-    /// MonoBehaviour responsible for visually representing a hero in the scene.
-    /// Binds to a pure domain Hero instance and plays Animator-driven animations.
+    /// Presentation layer view for a <see cref="Hero"/>.
+    /// Displays animations only and never contains gameplay logic.
+    /// 
+    /// ✔ Responsible solely for visuals (SRP)  
+    /// ✔ Works with domain Hero without modifying it  
+    /// ✔ Safe animator triggers (null-guard + unified helper)  
+    /// ✔ Clean API for transitions: Idle() / Attack()
     /// </summary>
+    [DisallowMultipleComponent]
     public class HeroView : MonoBehaviour
     {
-        [Header("Components")]
+        [Header("Animator & Visuals")]
         [SerializeField] private Animator _animator;
 
-        public Hero BoundHero { get; private set; }
+        /// <summary>
+        /// Bound domain entity. View reads data but never mutates it.
+        /// </summary>
+        public Hero Hero { get; private set; }
 
+        /// <summary>
+        /// Bind domain model to view.
+        /// Call after hero creation once per battle session.
+        /// </summary>
         public void Bind(Hero hero)
         {
-            BoundHero = hero;
+            if (hero == null)
+            {
+                Debug.LogWarning("[HeroView] Tried to bind null Hero.");
+                return;
+            }
+
+            Hero = hero;
             PlayIdle();
         }
 
-        public void PlayIdle()
-        {
-            if (_animator == null) return;
-            _animator.ResetTrigger("Attack");
-            _animator.SetTrigger("Idle");
-        }
+        /// <summary>
+        /// Default animation state.
+        /// </summary>
+        public void PlayIdle() => SetTriggerSafe("Idle");
 
-        public void PlayAttack()
+        /// <summary>
+        /// Used when hero performs an attack.
+        /// </summary>
+        public void PlayAttack() => SetTriggerSafe("Attack");
+
+        /// <summary>
+        /// Single trigger utility to avoid code repetition (DRY).
+        /// </summary>
+        private void SetTriggerSafe(string trigger)
         {
-            if (_animator == null) return;
+            if (_animator == null)
+            {
+                Debug.LogWarning($"[HeroView] Animator missing — trigger '{trigger}' ignored.");
+                return;
+            }
+
+            // Reset all relevant states (expandable later without modifying gameplay code)
             _animator.ResetTrigger("Idle");
-            _animator.SetTrigger("Attack");
+            _animator.ResetTrigger("Attack");
+
+            _animator.SetTrigger(trigger);
         }
     }
 }

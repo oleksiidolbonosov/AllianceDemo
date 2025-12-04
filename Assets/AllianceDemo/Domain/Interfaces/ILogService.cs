@@ -1,7 +1,8 @@
 namespace AllianceDemo.Domain.Interfaces
 {
     /// <summary>
-    /// Small abstraction for logging, decoupled from UnityEngine.Debug.
+    /// Abstract logging service decoupled from UnityEngine.Debug.
+    /// Allows console/log file/cloud logging without UI dependency.
     /// </summary>
     public interface ILogService
     {

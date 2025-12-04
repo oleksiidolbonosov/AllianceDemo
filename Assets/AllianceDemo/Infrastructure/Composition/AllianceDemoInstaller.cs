@@ -6,18 +6,25 @@ using Zenject;
 namespace AllianceDemo.Infrastructure.Composition
 {
     /// <summary>
-    /// Zenject installer responsible for binding services and use cases.
-    /// Attach this to a SceneContext or ProjectContext in the demo scene.
+    /// Scene-level DI container configuration.
+    /// Attach to SceneContext to enable the architecture.
     /// </summary>
     public class AllianceDemoInstaller : MonoInstaller
     {
         public override void InstallBindings()
         {
-            // Infrastructure singletons
+            BindInfrastructureServices();
+            BindUseCases();
+        }
+
+        private void BindInfrastructureServices()
+        {
             Container.Bind<ILogService>().To<UnityLogService>().AsSingle();
             Container.Bind<IAllianceApiClient>().To<MockAllianceApiClient>().AsSingle();
+        }
 
-            // Use cases
+        private void BindUseCases()
+        {
             Container.Bind<StartBattleUseCase>().AsTransient();
             Container.Bind<UseAbilityUseCase>().AsTransient();
             Container.Bind<CompleteBattleUseCase>().AsTransient();
