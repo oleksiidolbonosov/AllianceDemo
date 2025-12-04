@@ -116,20 +116,39 @@ namespace AllianceDemo.Presentation.Gameplay
             if (_battleFinished) return;
             if (!Enemy.IsAlive) return;
 
-            // Small squash & stretch feedback with DOTween
+            // 1) Play hero attack animation + small squash & stretch
             if (_heroView != null)
             {
+                _heroView.PlayAttack();
+
                 var t = _heroView.transform;
                 t.DOKill();
                 t.localScale = Vector3.one;
                 t.DOPunchScale(new Vector3(0.1f, 0.1f, 0f), 0.2f, 10, 1f);
             }
 
+            // 2) Apply damage in domain
             var enemyDied = _useAbility.Execute(Hero, Enemy);
+
+            // 3) Enemy feedback
+            if (_enemyView != null)
+            {
+                if (enemyDied)
+                {
+                    _enemyView.PlayDie();
+                }
+                else
+                {
+                    _enemyView.PlayHit();
+                }
+            }
+
+            // 4) Update UI
             _enemyHealthBar.AnimateRefresh();
 
             AbilityUsed?.Invoke();
 
+            // 5) Complete battle if needed
             if (enemyDied)
             {
                 var result = _completeBattle.Execute(Hero, Enemy);
@@ -139,6 +158,7 @@ namespace AllianceDemo.Presentation.Gameplay
                 BattleCompleted?.Invoke(result);
             }
         }
+
 
         public void EnableAbilityButton(bool enable)
         {
